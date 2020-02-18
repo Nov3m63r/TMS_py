@@ -1,71 +1,83 @@
-#=======
-#request
-#=======
+# ==== request ====
 
 import requests
 
 #http://www.nbrb.by/API/ExRates/Currencies[/{Cur_ID}]
 #http://www.nbrb.by/api/exrates/rates?periodicity=0
 
-uri = 'http://www.nbrb.by/API/ExRates/Currencies'
+uri = 'http://www.nbrb.by/api/exrates/rates?periodicity=0'
 
 resp = requests.get(uri)
 
 if resp.status_code == 200:
     dict_list = resp.json()
 
-# print(type(dict))
-# print(resp.json())
-    # Cur_ID
-    # Cur_Code
-    # Cur_Name
-
 curr_list = {}
 for dict in dict_list:
-    for key, value in dict.items():
-        #print(key, value)
-        if key == 'Cur_ID':
-            id = dict['Cur_ID']
-            curr_list[id] = dict['Cur_Name']
+    for key in dict:
+        id = dict['Cur_Abbreviation']
+        curr_list[id] = dict['Cur_ID']
 
-print(curr_list)
+j = 0
+print("Available currencies:")
+for i in list(curr_list.keys()):
+    print(i, end=" ")
+    j += 1
+    if j % 10 == 0:
+        print('')
+print("\n")
 
-#==========
-#user input
-#==========
-curr_list_short = {19: 'Евро', 88: 'Монгольский тугрик', 108: 'Польский злотый', 141: 'Российский рубль',
-             143: 'Фунт стерлингов', 145: 'Доллар США', 169: 'Украинская гривна', 171: 'Чешская крона',
-             172: 'Эстонская крона',  177: 'Литовский лит', 180: 'Словацкая крона'}
+# ==== user input ====
 
-amount, curr1, curr2 = input("Input amount, curr1, curr2: ")
+amount = input("Input amount: ")
+curr1 = input("Input currency 1: ").upper()
+curr2 = input("Input currency 2: ").upper()
 
+print(f'\nConversion of {amount} {curr1} to {curr2}:')
 
 def is_digit(n):
     if n.isdigit():
         return True
     else:
-        try: 
-            float(n) 
-            return True 
-        except ValueError: 
+        try:
+            float(n)
+            return True
+        except ValueError:
             return False
 
 
+def is_rated(curr):
+    if curr != 'BYN' and curr not in curr_list:
+        print("This currency is not rated")
+        return False
+    else:
+        return True
+
+if curr1 == curr2:
+    print("These are two identical currencies")
+
+is_rated(curr1)
+is_rated(curr2)
+
 if is_digit(amount):
     amount = float(amount)
-    print("ok")
     if amount <= 0:
-        print("It's not a correct number!")
+        print("It's not a correct sum!")
 else:
     print("It's not a number!")
 
+# ==== exchange ====
 
+def return_rate(curr):
+    if curr == 'BYN':
+        return 1
+    else:
+        for dict in dict_list:
+            if dict["Cur_Abbreviation"] == curr:
+               return dict['Cur_OfficialRate'] / dict['Cur_Scale']
 
-#========
-#exchange
-#========
+rate1 = return_rate(curr1)
+rate2 = return_rate(curr2)
 
-#вычисления
-
-
-
+result = amount * rate1 / rate2
+print(round(result, 2))
