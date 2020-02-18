@@ -1,3 +1,3 @@
-name,age,is_student,country
-Alex,20,True,
-John,22,,Belarus
+is_student,name,country,age
+True,Alex,,20
+,John,Belarus,22
